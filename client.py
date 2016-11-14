@@ -1,32 +1,43 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-"""
-Programa cliente que abre un socket a un servidor
-"""
+# Made by Felipe Sandoval Sibada
+"""UDP Client Program that sends a SIP method request."""
 
 import socket
+import sys
 
-# Cliente UDP simple.
 
-# Dirección IP del servidor.
-SERVER = 'localhost'
-PORT = 6001
+try:
+    METHOD = sys.argv[1]
+    LOGIN = sys.argv[2]
+    if len(sys.argv) != 3:
+        raise IndexError
+except (IndexError, ValueError):
+    sys.exit("Usage: python client.py method receiver@IP:SIPport")
 
-# Contenido que vamos a enviar
-LINE = '¡Hola mundo!'
+# Server IP address & port. We got it by splitting LOGIN values.
+SERVER_IP = LOGIN.split("@")[1].split(":")[0]
+PORT = int(LOGIN.split("@")[1].split(":")[1])
+LOGIN = LOGIN.split("@")[0] + "@127.0.0.1"
 
-# Creamos el socket, lo configuramos y lo atamos a un servidor/puerto
-my_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-my_socket.connect((SERVER, PORT))
+# Content to send.
+SIP_LINE = METHOD + " sip:" + LOGIN + " SIP/2.0\r\n\r\n"
 
-print("Enviando: " + LINE)
-my_socket.send(bytes(LINE, 'utf-8') + b'\r\n')
-data = my_socket.recv(1024)
-
-print('Recibido -- ', data.decode('utf-8'))
-print("Terminando socket...")
-
-# Cerramos todo
-my_socket.close()
-print("Fin.")
+if __name__ == "__main__":
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
+            my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            my_socket.connect((SERVER_IP, PORT))
+            print(SIP_LINE)
+            my_socket.send(bytes(SIP_LINE, 'utf-8'))
+            data = my_socket.recv(1024)
+            print('-- RECIEVED SIP INFO --\n' + data.decode('utf-8'))
+            if data.decode('utf-8').split(" ")[-1] == "OK\r\n\r\n":
+                SIP_ACK = "ACK" + " sip:" + LOGIN + " SIP/2.0\r\n\r\n"
+                my_socket.send(bytes(SIP_ACK, 'utf-8'))
+                data = my_socket.recv(1024)
+                print(data.decode('utf-8'))
+            my_socket.close()
+            print("END OF SOCKET")
+    except ConnectionRefusedError:
+        print("Connection Refused. Server not found.")

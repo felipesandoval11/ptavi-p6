@@ -12,6 +12,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
     """Main handler to send a RTP audio stream."""
     
     line_number = 0  # for distinct use in ack
+    print("aqui")
     
     def handle(self):
         """Handler to manage incoming users SIP request."""

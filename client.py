@@ -18,21 +18,25 @@ except (IndexError, ValueError):
 # Server IP address & port. We got it by splitting LOGIN values.
 SERVER_IP = LOGIN.split("@")[1].split(":")[0]
 PORT = int(LOGIN.split("@")[1].split(":")[1])
-LOGIN = LOGIN.split("@")[0] + "@127.0.0.1"
+LOGIN = LOGIN.split("@")[0] + "@" + SERVER_IP
 
 # Content to send.
-SIP_LINE = METHOD + " sip:" + LOGIN + " SIP/2.0\r\n\r\n"
+if METHOD == "INVITE" or METHOD == "BYE":
+    SIP_LINE = METHOD + " sip:" + LOGIN + " SIP/2.0\r\n\r\n"
+else:
+    SIP_LINE = METHOD + " sip:" + LOGIN
 
 if __name__ == "__main__":
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
             my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            my_socket.connect((SERVER_IP, PORT))
+            my_socket.connect(('localhost', PORT))
             print(SIP_LINE)
             my_socket.send(bytes(SIP_LINE, 'utf-8'))
             data = my_socket.recv(1024)
             print('-- RECIEVED SIP INFO --\n' + data.decode('utf-8'))
-            if data.decode('utf-8').split(" ")[-1] == "OK\r\n\r\n":
+            if data.decode('utf-8').split(" ")[-1] == "OK\r\n\r\n" and \
+               METHOD != "BYE":
                 SIP_ACK = "ACK" + " sip:" + LOGIN + " SIP/2.0\r\n\r\n"
                 my_socket.send(bytes(SIP_ACK, 'utf-8'))
                 data = my_socket.recv(1024)
@@ -40,4 +44,4 @@ if __name__ == "__main__":
             my_socket.close()
             print("END OF SOCKET")
     except ConnectionRefusedError:
-        print("Connection Refused. Server not found.")
+        print("Connection Refused: Server not found.")

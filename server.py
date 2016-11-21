@@ -24,9 +24,8 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             if len(line_print) != 3:
                 self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
             else:
-                #send = "mp32rtp -i 127.0.0.1 -p 23032 < " + sys.argv[3]
-                #os.system(send)
-                self.wfile.write(b"SIP/2.0 DEBERIA ENVIAR RTP\r\n\r\n")
+                send = "mp32rtp -i 127.0.0.1 -p 23032 < " + sys.argv[3]
+                os.system(send)
         elif line_str.split(" ")[0] == "BYE":
             self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
         elif line_str.split(" ")[0] != "":

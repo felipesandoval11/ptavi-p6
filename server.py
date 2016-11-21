@@ -23,7 +23,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
         elif line_str.split(" ")[0] == "ACK":
             if len(line_print) != 3:
                 self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
-            else: 
+            else:
                 send = "mp32rtp -i 127.0.0.1 -p 23032 < " + sys.argv[3]
                 os.system(send)
         elif line_str.split(" ")[0] == "BYE":

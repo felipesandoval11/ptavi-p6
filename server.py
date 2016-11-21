@@ -15,21 +15,21 @@ class SIPHandler(socketserver.DatagramRequestHandler):
         """Handler to manage incoming users SIP request."""
         line = self.rfile.read()
         line_str = line.decode('utf-8')
-        line_print = line_str.split(" ")
         if line_str.split(" ")[0] == "INVITE":
             self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
             self.wfile.write(b"SIP/2.0 180 Ringing\r\n\r\n")
             self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
         elif line_str.split(" ")[0] == "ACK":
-            if len(line_print) != 3:
-                self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
-            else:
                 send = "mp32rtp -i 127.0.0.1 -p 23032 < " + sys.argv[3]
                 os.system(send)
         elif line_str.split(" ")[0] == "BYE":
             self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
         elif line_str.split(" ")[0] != "":
-            self.wfile.write(b"SIP/2.0 405 Method Not Allowed\r\n\r\n")
+            if line_str.split(" ")[0] == "invite" or\
+               line_str.split(" ")[0] == "bye":  # Avoiding lower cases methods
+                self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
+            else:
+                self.wfile.write(b"SIP/2.0 405 Method Not Allowed\r\n\r\n")
         print(line_str)
 
 

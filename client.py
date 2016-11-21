@@ -12,6 +12,8 @@ try:
     LOGIN = sys.argv[2]
     if len(sys.argv) != 3:
         raise IndexError
+    if METHOD == "ACK":     #  Por seguridad.
+        raise ValueError
 except (IndexError, ValueError):
     sys.exit("Usage: python client.py method receiver@IP:SIPport")
 
@@ -21,16 +23,13 @@ PORT = int(LOGIN.split("@")[1].split(":")[1])
 LOGIN = LOGIN.split("@")[0] + "@" + SERVER_IP
 
 # Content to send.
-if METHOD == "INVITE" or METHOD == "BYE":
-    SIP_LINE = METHOD + " sip:" + LOGIN + " SIP/2.0\r\n\r\n"
-else:
-    SIP_LINE = METHOD + " sip:" + LOGIN
+SIP_LINE = METHOD + " sip:" + LOGIN + " SIP/2.0\r\n\r\n"
 
 if __name__ == "__main__":
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
             my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            my_socket.connect(('localhost', PORT))
+            my_socket.connect((SERVER_IP, PORT))
             print(SIP_LINE)
             my_socket.send(bytes(SIP_LINE, 'utf-8'))
             data = my_socket.recv(1024)

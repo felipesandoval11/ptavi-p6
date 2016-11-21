@@ -12,7 +12,7 @@ try:
     LOGIN = sys.argv[2]
     if len(sys.argv) != 3:
         raise IndexError
-    if METHOD == "ACK":     #  Por seguridad.
+    if METHOD == "ACK":     # Por seguridad.
         raise ValueError
 except (IndexError, ValueError):
     sys.exit("Usage: python client.py method receiver@IP:SIPport")
